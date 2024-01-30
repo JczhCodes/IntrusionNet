@@ -1,11 +1,19 @@
 from openai import OpenAI
 import time
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+# Get API key and Assistant ID from environment variables
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
 
 def initialize_openai_client():
     """
     Initialize OpenAI client.
     """
-    client = OpenAI()
+    client = OpenAI(api_key=OPENAI_API_KEY)
     return client
 
 def create_assistant(client):
@@ -65,10 +73,10 @@ def check_run_status(client, run_id, thread_id):
 
 # Example usage
 client = initialize_openai_client()
-assistant = create_assistant(client)
+# assistant = create_assistant(client)
 thread = create_thread(client)
 send_message(client, thread.id, "I want to pen test this machine 192.168.1.205")
-run = create_run(client, thread.id, assistant.id)
+run = create_run(client, thread.id, OPENAI_ASSISTANT_ID)  # Use the assistant ID from env variable
 
 while True:
     run_status = check_run_status(client, run.id, thread.id)
