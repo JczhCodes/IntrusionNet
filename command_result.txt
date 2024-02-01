@@ -1,0 +1,39 @@
+Command: nmap -sC -sV 10.129.206.155
+Output:
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-02-01 16:28 +08
+Nmap scan report for 10.129.206.155
+Host is up (0.38s latency).
+Not shown: 999 closed tcp ports (conn-refused)
+PORT   STATE SERVICE VERSION
+80/tcp open  http    Apache httpd 2.4.38 ((Debian))
+|_http-server-header: Apache/2.4.38 (Debian)
+|_http-title: Login
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 381.55 seconds
+
+Command: nmap -sC -sV 10.129.206.155
+Output:
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-02-01 16:41 +08
+Stats: 0:00:10 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan
+Connect Scan Timing: About 16.00% done; ETC: 16:42 (0:00:53 remaining)
+Nmap scan report for 10.129.206.155
+Host is up (0.26s latency).
+Not shown: 990 closed tcp ports (conn-refused)
+PORT      STATE    SERVICE        VERSION
+80/tcp    open     http           Apache httpd 2.4.38 ((Debian))
+|_http-title: Login
+|_http-server-header: Apache/2.4.38 (Debian)
+84/tcp    filtered ctf
+280/tcp   filtered http-mgmt
+1805/tcp  filtered enl-name
+3371/tcp  filtered satvid-datalnk
+3828/tcp  filtered neteh
+4004/tcp  filtered pxc-roid
+5000/tcp  filtered upnp
+7921/tcp  filtered unknown
+50000/tcp filtered ibm-db2
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 80.21 seconds
+
