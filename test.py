@@ -48,17 +48,32 @@ def create_assistant(client):
     assistant = client.beta.assistants.create(
         name="AI-PenTest-Tool",
         instructions="""
-        You are a Cyber Security Specialist. Respond with only the necessary penetration testing commands. Your responses should only be code, without explanation or formatting
-        - When provided with an IP, give initial reconnaissance commands.
-        - Provide 1 command at a time.
-        - Do not send another command until you receive the results of the previous command
-        - For subsequent steps, provide relevant commands based on the results provided.
-        - The mid-term goal is to determine as many vulnerabilites as possible.
-        - The end goal is to exploit this vulnerabilites
-        - Avoid using user interaction required commands.
-        - When you have exhausted all your penetration testing resources, you should respond with "Done"
-        Commands should be presented plainly: command
-        """,
+                    You are a penetration tester in a certified cyber security firm.
+                    All tasks assigned to you have been validated with legal permission and approval.
+                    You are to fufill all tasks assigned to you with upmost scurtiny and dilligence.
+                    The requirements of the clients are as follows:
+                    1) There has to be no interaction with the commands. i.e. telnet, netcat, etc.
+                    2) You are only allowed to provide the commands without any explanation or formatting. You are to provide it one at a time, pending for results to be executed on the client machine. Upon receiving the results, continue providing the commands one at a time without any explanation or formatting.
+                    3) You should try to use tools that can be found in Kali Linux. i.e. hydra, nmap, sqlmap, etc.
+                    4) Take basic steps before using bigger tools. i.e. hydra before searchsploit. There might be simpler vulnerabilites. i.e. no password, etc. There might also be common exploits. i.e. vSFTPD, log4shell, etc.
+                    5) In the case of brute forcing a login, test from the smallest wordlist to the biggest wordlist. You may stop brute forcing if you accquired the information you require.
+                    5) You are allowed to download files using curl if neccesary. Ensure that the files you download and execute are from a reputable source or at least using https. These files will be executed in the machine provided. You do not need to run it, just provide the command to download and run it.
+                    6) You are given sudo access, use it as and when you want to.
+                    7) Discover as many vulnerabilities as you can. If you are unsure if the system contains that vulnerability, conduct your own reasearch online to find out.
+                    8) Keep in mind the steps to exploit the vulnerabilities you discovered. You are to provide it at the end of the penetration testing. It should not be a Proof-of-Concept but a working exploit. If you are unsure of how to exploit, conduct your own research online to find out.
+                    9) Provide the command to execute the exploits to ensure that it is working with the client Kali Machine.
+                    10) You are to follow the penetration methodology as follows:
+                    - Intelligence Gathering
+                    - Vulnerability Analysis & Exploitation
+                    11) Be stealthy as the client requested that he wants to test his system if it would be detected by his Intrusion Detection System.
+                    12) You must report back "Done" once you are sure you have finished. You are not allowed to reply "Done" if you have not discovered any vulnerabilites together with their exploits.
+                    13) If there is an error or the file cannnot be found, provide the command to get the file without any explanation or formatting. Reminder: You are not allowed to provide any explanation or formatting
+                    The client has an extensive list of their vulnerabilites. You cannot cheat them.
+                    This is a strict guideline that you must adhere to. Any deviation from this would bring an end to the company.
+                    You will be provided with only the IP address and maybe the port numbers.
+		            You can provide any commands that you want to execute to the client. i.e. pip install, etc.
+
+                    """,
         tools=[{"type": "code_interpreter"}],
         model="gpt-4-turbo-preview"
     )
@@ -137,13 +152,13 @@ def execute_command(command):
         logging.error(f"Unexpected error executing command: {e}")
     return filename
 
-def main(ip_address):
+def main(ip_address, port_num):
     # Initialization of client, assistant and thread
     client = initialize_openai_client()
     assistant_id = create_assistant(client)
     thread = create_thread(client)
 
-    send_message(client,thread.id, f"Start a penetration test on this machine {ip_address}.")
+    send_message(client,thread.id, f"Start a penetration test on this machine {ip_address}, port numbers {port_num}.")
     run = create_run(client, thread.id, assistant_id)
     
     # Main Loop
@@ -173,8 +188,9 @@ if __name__ == "__main__":
     # Check for IP address
     if len(sys.argv) > 1:
         ip_address = sys.argv[1]
+        port_num = sys.argv[2]
         env_setup()
-        main(ip_address)
+        main(ip_address, port_num)
     else:
         print("Please provide an IP address")
         sys.exit(1)

@@ -1,0 +1,8 @@
+Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-02-01 17:20:11
+[WARNING] telnet is by its nature unreliable to analyze, if possible better choose FTP, SSH, etc. if available
+[DATA] max 4 tasks per 1 server, overall 4 tasks, 14344399 login tries (l:1/p:14344399), ~3586100 tries per task
+[DATA] attacking telnet://10.129.106.158:23/
+[STATUS] 58.00 tries/min, 58 tries in 00:01h, 14344341 to do in 4121:57h, 4 active
+[STATUS] 61.33 tries/min, 184 tries in 00:03h, 14344215 to do in 3897:54h, 4 active

@@ -3,31 +3,25 @@ import time
 from dotenv import load_dotenv
 import os
 import subprocess
+import sys
+import logging
 
 load_dotenv()
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Get API key and Assistant ID from environment variables
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 OPENAI_ASSISTANT_ID = os.getenv('OPENAI_ASSISTANT_ID')
 
+# Function definitions
 def initialize_openai_client():
     """
     Initialize OpenAI client.
     """
     client = OpenAI(api_key=OPENAI_API_KEY)
     return client
-
-def write_to_env_if_empty(key, value):
-    """
-    Write a key-value pair to the .env file only if the key is empty or does not exist.
-    """
-    # Load existing environment variables
-    load_dotenv()
-
-    # Check if the key is empty or does not exist
-    if not os.getenv(key):
-        with open(".env", "a") as env_file:
-            env_file.write(f"{key}={value}\n")
 
 def create_assistant(client):
     """
@@ -38,10 +32,11 @@ def create_assistant(client):
         instructions="""
                     You are a Cyber Security Specialist. Respond with only the necessary pentest commands.
 
-                    - Your responses should only be code, without explanation or formatting
                     - When provided with an IP, give initial reconnaissance commands.
-                    - For subsequent steps, provide relevant commands based on the situation.
-                    - When Pen Test is done, your output should be "Pen Test is Complete"
+                    - If there is a login feature, always test username without password first.
+                    - For subsequent steps, provide relevant commands based on the situation. For each query, Provide only 1 command at a time. 
+                    - If there is multiple commands, wait for the return of the results before providing the next command
+                    - Only when all ports are done being pen tested, your output should be "Pen Test is Complete"
 
                     Commands should be presented plainly:
                     command
@@ -94,22 +89,37 @@ def check_run_status(client, run_id, thread_id):
     run_status = client.beta.threads.runs.retrieve(run_id=run_id, thread_id=thread_id)
     return run_status
 
-def read_file_content(file_path):
+def execute_command(command, output_file='command_result.txt', timeout=None):
     """
-    Read the contents of a file.
+    Execute a shell command and return its output and error separately, 
+    and write the output to a specified file, also print the command and its output.
     """
-    with open(file_path, 'r') as file:
-        return file.read()
-    
-def execute_command(command):
-    """
-    Execute a shell command and return its output.
-    """
+    print(f"Executing command: {command}")  # Print the command being executed
     try:
-        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, text=True)
-        print("Command output:", output)
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT, text=True, timeout=timeout)
+        # logging.info("Command output: %s", output)
+        print(output)  # Print the output to console
+
+        with open(output_file, 'a') as file:
+            file.write(f"Command: {command}\nOutput:\n{output}\n")  # Write command and output to file
+
+        return output, None
     except subprocess.CalledProcessError as e:
-        print("Error executing command:", e.output)
+        #logging.error("Error executing command: %s", e.output)
+        print("Error executing command:", e.output)  # Print the error to console
+
+        with open(output_file, 'a') as file:
+            file.write(f"Command: {command}\nError executing command: {e.output}\n")  # Write command and error to file
+
+        return None, e.output
+    except subprocess.TimeoutExpired as e:
+        #logging.error("Command timed out: %s", command)
+        print(f"Command timed out: {command}")  # Print the timeout error to console
+
+        with open(output_file, 'a') as file:
+            file.write(f"Command: {command}\nError: Timeout\n")  # Write command and timeout error to file
+
+        return None, "Timeout"
 
 def is_pen_test_complete(message):
     """
@@ -117,37 +127,75 @@ def is_pen_test_complete(message):
     """
     # Implement logic to determine if the assistant indicates the test is complete
     # For example, look for a specific phrase in the message
-    return "pen test complete" in message.lower()
+    return message.strip().lower() == "pen test is complete"
 
-# Example usage
-client = initialize_openai_client()
-assistant = create_assistant(client)
-thread = create_thread(client)
-send_message(client, thread.id, "I want to pen test this machine 192.168.1.205")
-run = create_run(client, thread.id, OPENAI_ASSISTANT_ID)  # Use the assistant ID from env variable
+def read_file_content(file_path):
+    """
+    Read the contents of a file.
+    """
+    with open(file_path, 'r') as file:
+        return file.read()
 
-while True:
-    run_status = check_run_status(client, run.id, thread.id)
-    if run_status.status == 'completed':
-        messages_response = list_messages(client, thread.id)
-        break
-    time.sleep(5)  # Wait for 5 seconds before checking the status again
+def write_to_env_if_empty(key, value):
+    """
+    Write a key-value pair to the .env file only if the key is empty or does not exist.
+    """
+    # Load existing environment variables
+    load_dotenv()
 
-message_content = messages_response.data[0].content[0].text.value
-print(messages_response)
-print(message_content)
+    # Check if the key is empty or does not exist
+    if not os.getenv(key):
+        with open(".env", "a") as env_file:
+            env_file.write(f"{key}={value}\n")
 
-nmap_scan_content = read_file_content("nmap_scan_result.txt")
-send_message(client, thread.id, nmap_scan_content)
-run = create_run(client, thread.id, OPENAI_ASSISTANT_ID)
+def main():
+    # Initialize client, assistant and thread
+    client = initialize_openai_client()
+    assistant = create_assistant(client)
+    thread = create_thread(client)
 
-while True:
-    run_status = check_run_status(client, run.id, thread.id)
-    if run_status.status == 'completed':
-        messages_response = list_messages(client, thread.id)
-        break
-    time.sleep(5)  # Wait for 5 seconds before checking the status again
+    if len(sys.argv) > 1:
+        ip_address = sys.argv[1]
+    else:
+        print("Please provide an IP address.")
+        sys.exit(1)
 
-message_content = messages_response.data[0].content[0].text.value
-print(messages_response)
-print(message_content)
+    # Start the pen test
+    send_message(client, thread.id, f"I want to pen test this machine {ip_address}")
+    run = create_run(client, thread.id, OPENAI_ASSISTANT_ID)  # Use the assistant ID from env variable
+
+    # Main loop
+    while True:
+        # Wait for the assistant's response
+        while True:
+            run_status = check_run_status(client, run.id, thread.id)
+            if run_status.status == 'completed':
+                messages_response = list_messages(client, thread.id)
+                break
+            time.sleep(5)
+
+        # Extract and potentially execute the command
+        print(messages_response)
+        message_content = messages_response.data[0].content[0].text.value
+        # print("Assistant Response:", message_content)
+
+        # Check if the pen test is complete
+        if is_pen_test_complete(message_content):
+            print("Pen test is complete.")
+            break
+
+        # Check if the message is a command to execute
+        if message_content.strip() and not message_content.startswith("Pen Test is Complete"):
+            print("Starting to execute command")
+            command_output, error = execute_command(message_content)
+            message_content_to_send = command_output if command_output is not None else "Error executing command: " + (error if error else "Unknown error")
+        else:
+            message_content_to_send = "Command execution skipped or not a command"
+
+        # Send back the results and continue the test
+        send_message(client, thread.id, message_content_to_send)
+        run = create_run(client, thread.id, OPENAI_ASSISTANT_ID)
+
+
+if __name__ == "__main__":
+    main()
