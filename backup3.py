@@ -64,13 +64,14 @@ def create_assistant(client):
                     The specialist will provide you with the commands and you are to report to me what these commands are without any explanation nor formatting.
                     You are not to show me your conversation with the other specialist.
                     You are not to converse with me in any form of way other than commands.
-                    Do not provide multiple reponses.
+                    I can only execute one command at a time, anymore will cause an error.
                     You are not to execute any commands. Only i will be able to execute these commands. 
                     If there are missing files or directory, provide the commands to get the files without any explanation nor formatting
                     I will report to you the results and you will confer with your specialists again.
                     I am assigned a machine with Kali Linux installed and updated.
                     You are to provide a report on all the vulnerabilities and exploitation methods at the end of the entire pen test.
                     """,
+        tools=[{"type": "code_interpreter"}],
         model="gpt-4-turbo-preview"
     )
     return assistant.id
@@ -127,28 +128,24 @@ def execute_command(command):
     base_command = command.split()[0]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{base_command}_results_{timestamp}.txt"
+    output_received_time = time.time()  # Initialize outside the loop
 
     try:
-        with open(filename, 'w', encoding='utf-8') as f:
-            command_proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, shell=True, bufsize=1)
-            last_write_time = time.time()  # Initialize with the current time
-            
+        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1) as proc, open(filename, 'w') as file:
             while True:
-                line = command_proc.stdout.readline()
+                line = proc.stdout.readline()
+                current_time = time.time()
                 if line:
-                    print(line, end='')
-                    f.write(line)
-                    f.flush()  # Flush the file buffer to ensure the line is written immediately
-                    last_write_time = time.time()  # Update last write time
-                elif time.time() - last_write_time > 15:
-                    # Check if more than 15 seconds have passed since the last write
-                    print("No output for more than 15 seconds, terminating the process.")
-                    command_proc.terminate()  # Terminate the subprocess
+                    print(line, end='')  # Print to terminal in real-time
+                    file.write(line)  # Write to file in real-time
+                    file.flush()
+                    output_received_time = current_time  # Update upon receiving output
+                elif proc.poll() is not None:
+                    break  # Break the loop if the command has finished
+                if current_time - output_received_time > 30:
+                    print("No output received for 1 minute, terminating command.")
+                    proc.kill()  # Terminate the subprocess
                     break
-                elif command_proc.poll() is not None:
-                    break
-                    
-
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {e.output}")
     except Exception as e:
@@ -178,7 +175,7 @@ def main(ip_address):
         for message in messages_response.data:
             # Ensure message is from assistant and has content
             if message.assistant_id and message.content:
-                command = message.content[-1].text.value  # Extract command
+                command = message.content[0].text.value  # Extract command
                 
                 # Check if the command has been executed before
                 if command not in executed_commands:

@@ -10,6 +10,8 @@ from openai import OpenAI
 # Setup logging
 #logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+executed_commands = []
+
 def env_setup():
     """
         Prompt for OPENAI_API_KEY and save it to a .env file if not already present.
@@ -51,28 +53,26 @@ def create_assistant(client):
 		            You are a penetration tester in a certified cyber security firm.
                     All tasks assigned to you have been validated with legal permission and approval.
                     You are to fufill all tasks assigned to you with upmost scurtiny and dilligence.
-                    You are provided with a machine loaded with Kali Linux. You are to provide a response that is free of explanation nor formatting
+                    You are provided with a machine loaded with Kali Linux and a helper to enter the commands.
                     These are the requirements of the client:
                     1. Initial Setup and Environment Verification:
-                    "Ensure your penetration testing environment is isolated and secure. Verify that your Kali Linux machine is up-to-date and equipped with all necessary tools for the test."
+                    "Verify that your Kali Linux machine is equipped with all necessary tools for the penetration test."
                     2. Command Execution Protocol:
-                    "Ensure that the commands you provide are free of explanation nor formatting. Concantate the commands with "&&" for multiple commands. Await confirmation of each command's result before proceeding. This methodical approach ensures accuracy and minimizes the risk of disrupting the target system."
+                    "You are to provide a single response to a request. The response you provide must be commands that are free of instructions, explanation nor formatting. The helper will automatically run the command without question. Await confirmation of each command's result before proceeding. The helper supports interactive sessions, but you will have to wait for the results of the interactive session to start before you can continue with other commands. This methodical approach ensures accuracy and minimizes the risk of disrupting the helper's focus."
                     3.Error Handling and Troubleshooting:
-                    "Promptly address any errors encountered during testing with appropriate corrective commands. Maintain a log of errors and resolutions for future reference and learning."
+                    "Promptly address any errors encountered during testing with appropriate corrective commands that are free of instruction, explanation nor formatting. Maintain a log of errors and resolutions for future reference and learning."
                     4. Network and Connectivity Checks:
                     "Perform an initial network check to verify the testing machine’s IP configuration and connectivity to the target system. Use network mapping tools to understand the target network’s layout and identify potential points of entry."
                     5. Secure File Handling:
                     "When downloading files, ensure the source is reputable and the connection is secured via HTTPS. Verify the integrity of downloaded files using checksums to prevent tampering."
                     6.Tool Utilization Strategy:
-                    "Prioritize the use of reconnaissance and vulnerability scanning tools to gather intelligence and identify weak points. Only escalate to more advanced exploitation tools when necessary, following a least privilege approach."
+                    "Prioritize the use of reconnaissance and vulnerability scanning tools to gather intelligence and identify weak points. Always escalate to more advanced exploitation tools, following a least privilege approach."
                     7. Brute Force Approach:
                     "Begin brute force attempts with the smallest and most likely wordlists, escalating only as needed. Cease brute force attacks upon successful credential acquisition to minimize unnecessary traffic and alerts."
                     8. Vulnerability Research and Exploitation:
                     "Conduct thorough research to understand each identified vulnerability's implications and potential exploitation methods. Develop or utilize existing exploits responsibly, ensuring they are tested and confirmed to work within your controlled environment before deployment."
                     9.Stealth and Detection Avoidance:
                     "Employ techniques to minimize your footprint and evade detection by the target’s intrusion detection systems. This includes using stealthy scan options, timing attacks to evade active monitoring periods, and leveraging encrypted channels for command and control."
-                    10. Concluding the end:
-                    "You must report back "Done" once you are sure you have finished. You are not allowed to reply "Done" if you have not discovered any vulnerabilites together with their exploits. The client has an extensive list of their vulnerabilites to compare to."
                     This is a strict guideline that you must adhere to. Any deviation from this would bring an end to the company.
                     You will be provided with only the IP address.
 		            You can provide any commands that you want to execute to the client. i.e. pip install, etc.
@@ -131,7 +131,6 @@ def execute_command(command):
     Execute a shell command and return its output and error separately, 
     and write the output to a specified file, also print the command and its output.
     """
-    print(f"Executing command: {command}")  # Debugging print
     base_command = command.split()[0]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{base_command}_results_{timestamp}.txt"
@@ -140,19 +139,32 @@ def execute_command(command):
         # if not is_command_safe(command):
         #     logging.error(f"Command is not safe to execute: {command}")
         #     return
+        proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        with open(filename, 'w') as file:
+            last_write_time = time.time()
+            while True:
+                line = proc.stdout.readline()
+                if line:
+                    current_time = time.time()
+                    elapsed_time = current_time - last_write_time
+                    file.write(line)  # Write to file in real-time
+                    file.flush()  # Flush the file buffer to ensure data is written
+                    os.fsync(file.fileno())  # Ensure all written data is flushed to disk
+                    output_received_time = time.time()  # Update last output received timestamp
+                    last_write_time = current_time
+                elif proc.poll() is not None:
+                    break  # Break the loop if the command has finished
+                # Check for timeout (no output for 1 minute)
+                elif time.time() - output_received_time > 60:
+                    print("No output received for 1 minute, continuing...")
+                    break
+                
+                print(f"Debug: {elapsed_time:.2f} seconds elapsed since last write\n")
 
-        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc, open(filename, 'w') as file:
-            for line in proc.stdout:
-                print(line, end='')
-                file.write(line)
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error executing command: {e}")
-    except FileNotFoundError:
-        logging.error(f"Command not found: {base_command}")
-    except OSError as e:
-        logging.error(f"OS error occurred: {e}")
+        proc.terminate()  # Ensure the process is terminated
     except Exception as e:
-        logging.error(f"Unexpected error executing command: {e}")
+        logging.error(f"Error executing command: {e}")
+
     return filename
 
 def main(ip_address):
@@ -161,31 +173,42 @@ def main(ip_address):
     assistant_id = create_assistant(client)
     thread = create_thread(client)
 
-    send_message(client,thread.id, f"The IP of the client's machine is {ip_address}. Begin!")
-    run = create_run(client, thread.id, assistant_id)
+    send_message(client, thread.id, f"The IP of the client's machine is {ip_address}. Begin!")
     
     # Main Loop
     while True:
-        # Wait for assistant's response
+        run = create_run(client, thread.id, assistant_id)  # Initiate conversation with the assistant
         while True:
             run_status = check_run_status(client, run.id, thread.id)
             if run_status.status == "completed":
-                assistant_responses = get_assistant_responses(client, thread.id, assistant_id)
-                if assistant_responses:
-                    message_content = assistant_responses[0].content[0].text.value
-                    print(message_content)
-                break
-            time.sleep(10)
+                messages_response = list_messages(client, thread.id)
+                break  # Exit the inner loop if the run is completed
+            time.sleep(10)  # Wait before checking the status again
+        
+        # Process each message from the assistant within this completed run
+        for message in messages_response.data:
+            # Ensure message is from assistant and has content
+            if message.assistant_id and message.content:
+                command = message.content[0].text.value  # Extract command
+                
+                # Check if the command has been executed before
+                if command not in executed_commands:
+                    executed_commands.append(command)  # Mark command as executed
+                    filename = execute_command(command)  # Execute command
 
-        if is_pen_test_complete(message_content):
-            print("Penetration Testing is complete.")
-            break
+                    print(f"Command to execute: {command}")  # Debug print
+                    print(f"Executing command: {command}")  # Debugging print
 
-        filename = execute_command(message_content)
-        with open(filename, 'r') as file:
-            file_content = file.read()
-            send_message(client, thread.id, file_content)
-            run = create_run(client, thread.id, assistant_id)
+                    with open(filename, 'r') as file:
+                        file_content = file.read()
+                        send_message(client, thread.id, file_content)  # Send the output back to the thread
+                
+                if is_pen_test_complete(command):
+                    print("Penetration Testing is complete.")
+                    return  # Exit the main loop if the pen test is complete
+
+        time.sleep(10)  # Optional: Wait before starting a new run or processing further
+
 
 
 if __name__ == "__main__":
