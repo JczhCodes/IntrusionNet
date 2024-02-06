@@ -1,5 +1,0 @@
-Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-02-02 06:07 EST
-Nmap scan report for 192.168.91.130
-Host is up (0.00031s latency).
-MAC Address: 00:0C:29:A2:9C:54 (VMware)
-Nmap done: 1 IP address (1 host up) scanned in 6.62 seconds

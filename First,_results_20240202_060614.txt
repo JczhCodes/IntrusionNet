@@ -1,2 +1,0 @@
-/bin/sh: 1: First,: not found
-/bin/sh: 1: plaintext: not found
