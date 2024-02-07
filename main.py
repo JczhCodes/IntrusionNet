@@ -58,19 +58,22 @@ def create_assistant(client):
                     2. Senior Scanning Specialist
                     3. Senior Vulnerability Assesment Specialist
                     4. Senior Exploitation Specialist
+                    - He only uses pwntools (https://docs.pwntools.com/en/stable/index.html) to create working python files to exploit vulnerabilites
+                    - He does not use standard packages to exploit vulnerabilites.
                     5. Senior Reporting Specialist
                     We will only be given the ip address to begin the penetration test
                     You are to confer with the specialists and discuss what commands need to be executed.
                     The specialist will provide you with the commands and you are to report to me what these commands are without any explanation nor formatting.
                     You are not to show me your conversation with the other specialist.
                     You are not to converse with me in any form of way other than commands.
+                    Provide all response without any explanation nor formatting.
                     Do not provide multiple reponses.
                     You are not to execute any commands. Only i will be able to execute these commands. 
                     If there are missing files or directory, provide the commands to get the files without any explanation nor formatting
                     I will report to you the results and you will confer with your specialists again.
                     I am assigned a machine with Kali Linux installed and updated.
-                    You are to provide a report on all the vulnerabilities and exploitation methods at the end of the entire pen test.
                     """,
+                    #You are to provide a report on all the vulnerabilities and exploitation methods at the end of the entire pen test.
         model="gpt-4-turbo-preview"
     )
     return assistant.id
@@ -140,6 +143,7 @@ def execute_command(command):
                     f.write(line)
                     f.flush()  # Flush the file buffer to ensure the line is written immediately
                     last_write_time = time.time()  # Update last write time
+                    print(last_write_time)
                 elif time.time() - last_write_time > 15:
                     # Check if more than 15 seconds have passed since the last write
                     print("No output for more than 15 seconds, terminating the process.")
@@ -161,7 +165,6 @@ def main(ip_address):
     client = initialize_openai_client()
     assistant_id = create_assistant(client)
     thread = create_thread(client)
-
     send_message(client, thread.id, f"The IP of the client's machine is {ip_address}. Begin!")
     
     # Main Loop
@@ -178,7 +181,7 @@ def main(ip_address):
         for message in messages_response.data:
             # Ensure message is from assistant and has content
             if message.assistant_id and message.content:
-                command = message.content[-1].text.value  # Extract command
+                command = message.content[0].text.value  # Extract command
                 
                 # Check if the command has been executed before
                 if command not in executed_commands:
@@ -195,7 +198,6 @@ def main(ip_address):
                     return  # Exit the main loop if the pen test is complete
 
         time.sleep(10)  # Optional: Wait before starting a new run or processing further
-
 
 
 if __name__ == "__main__":
