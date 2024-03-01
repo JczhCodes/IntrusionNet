@@ -1,1 +1,0 @@
-/bin/sh: 5: Syntax error: Unterminated quoted string

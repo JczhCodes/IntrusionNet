@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 import subprocess
@@ -6,9 +5,6 @@ import time
 from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
-
-# Setup logging
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 executed_commands = []
 
@@ -143,7 +139,7 @@ def execute_command(command):
                     f.write(line)
                     f.flush()  # Flush the file buffer to ensure the line is written immediately
                     last_write_time = time.time()  # Update last write time
-                    print(last_write_time)
+                    #print(last_write_time)
                 elif time.time() - last_write_time > 15:
                     # Check if more than 15 seconds have passed since the last write
                     print("No output for more than 15 seconds, terminating the process.")
