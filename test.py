@@ -1,6 +1,7 @@
 import os
+import pexpect
+import re
 import sys
-import subprocess
 import time
 from datetime import datetime
 from dotenv import load_dotenv
@@ -118,46 +119,46 @@ def get_assistant_responses(client, thread_id, assistant_id):
     assistant_responses = [msg for msg in messages.data if msg.assistant_id == assistant_id]
     return assistant_responses
 
-def execute_command(command, timeout=30, user_input=None, follow_up_commands=None):
+def execute_command(client, thread_id, command, timeout=30):
     """
-    Execute a shell command and return its output and error separately,
-    and write the output to a specified file, also print the command and its output.
+    Execute a shell command using pexpect, allowing for real-time interaction and command execution.
+    Logs the command's output to a file and prints it to stdout. When a specific prompt ('msf6 >') is detected,
+    it sends the content of the output file to the thread and allows for reading the response.
     """
     base_command = command.split()[0]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{base_command}_results_{timestamp}.txt"
-
-    shell_detected = False
+    msf_prompt_pattern = re.compile(r'msf6 >')
 
     try:
+        child = pexpect.spawn(command, encoding='utf8', timeout=timeout)
+        child.logfile = sys.stdout  # Enable logging to stdout
+
         with open(filename, 'w', encoding='utf-8') as f:
-            command_proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, universal_newlines=True, shell=True, bufsize=1)
-            last_write_time = time.time()  # Initialize with the current time
-            
-            # Providing initial user input if any
-            if user_input:
-                command_proc.stdin.write(user_input)
-                command_proc.stdin.flush()
-
             while True:
-                line = command_proc.stdout.readline()
-                if line:
-                    print(line, end='')
-                    f.write(line)
-                    f.flush()  # Flush the file buffer to ensure the line is written immediately
-                    last_write_time = time.time()  # Update last write time
-                    #print(last_write_time)
-                elif time.time() - last_write_time > 15:
-                    # Check if more than 15 seconds have passed since the last write
-                    print("No output for more than 15 seconds, terminating the process.")
-                    command_proc.terminate()  # Terminate the subprocess
-                    break
-                elif command_proc.poll() is not None:
-                    break
-                    
+                try:
+                    while True:
+                        index = child.expect([msf_prompt_pattern, pexpect.TIMEOUT, pexpect.EOF], timeout=30)
+                        if index == 0:  # 'msf6 >' prompt detected
+                            output = child.before + "msf6 >"  # Include the prompt in the output
+                            print(output)  # Debug: print the output
+                            f.write(output)
+                            f.flush()
+                            break  # Exit the inner loop to process the output
+                        elif index in [1, 2]:  # TIMEOUT or EOF
+                            break
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {e.output}")
+                    f.seek(0)
+                    file_content = f.read()
+                    send_message(client, thread_id, file_content)  # Send the captured output
+                    
+                    if index == 2:  # If EOF is encountered, end the command execution
+                        break
+
+                except pexpect.ExceptionPexpect as e:
+                    print(f"Error during command execution: {e}")
+                    break
+
     except Exception as e:
         print(f"Unexpected error: {e}")
 
@@ -189,8 +190,8 @@ def main(ip_address):
                 # Check if the command has been executed before
                 if command not in executed_commands:
                     executed_commands.append(command)  # Mark command as executed
-                    print(f"Executing command: {command}")  # Debugging print
-                    filename = execute_command(command)  # Execute command
+                    print(f"Executing command: {command}")  # Debugging printw
+                    filename = execute_command(client=client, thread_id=thread.id, timeout= 30)  # Execute command
 
                     with open(filename, 'r') as file:
                         file_content = file.read()
