@@ -191,6 +191,7 @@ def main(ip_address):
                     executed_commands.append(command)  # Mark command as executed
                     print(f"Executing command: {command}")  # Debugging print
                     filename = execute_command(command)  # Execute command
+                    sleep(10)
 
                     with open(filename, 'r') as file:
                         file_content = file.read()
