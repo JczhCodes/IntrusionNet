@@ -1,39 +1,0 @@
-Metasploit tip: View a module's description using info, or the enhanced 
-version in your browser with info -d
-[*] Starting the Metasploit Framework console.../[*] Starting the Metasploit Framework console...-[*] Starting the Metasploit Framework console...\[*] starting the Metasploit Framework console...|[*] STarting the Metasploit Framework console.../[*] StArting the Metasploit Framework console...-[*] StaRting the Metasploit Framework console...\[*] StarTing the Metasploit Framework console...|[*] StartIng the Metasploit Framework console.../[*] StartiNg the Metasploit Framework console...-[*] StartinG the Metasploit Framework console...\[*] Starting the Metasploit Framework console...|[*] Starting The Metasploit Framework console.../[*] Starting tHe Metasploit Framework console...-[*] Starting thE Metasploit Framework console...\[*] Starting the Metasploit Framework console...|[*] Starting the metasploit Framework console.../[*] Starting the MEtasploit Framework console...-[*] Starting the MeTasploit Framework console...\[*] Starting the MetAsploit Framework console...|                                                  
-Call trans opt: received. 2-19-98 13:24:18 REC:Loc
-
-     Trace program: running
-
-           wake up, Neo...
-        the matrix has you
-      follow the white rabbit.
-
-          knock, knock, Neo.
-
-                        (`.         ,-,
-                        ` `.    ,;' /
-                         `.  ,'/ .'
-                          `. X /.'
-                .-;--''--.._` ` (
-              .'            /   `
-             ,           ` '   Q '
-             ,         ,   `._    \
-          ,.|         '     `-.;_'
-          :  . `  ;    `  ` --,.._;
-           ' `    ,   )   .'
-              `._ ,  '   /_
-                 ; ,''-,;' ``-
-                  ``-..__``--`
-
-                             https://metasploit.com
-
-
-       =[ metasploit v6.3.55-dev                          ]
-+ -- --=[ 2397 exploits - 1235 auxiliary - 422 post       ]
-+ -- --=[ 1391 payloads - 46 encoders - 11 nops           ]
-+ -- --=[ 9 evasion                                       ]
-
-Metasploit Documentation: https://docs.metasploit.com/
-
-msf6 > 

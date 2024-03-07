@@ -51,17 +51,7 @@ def create_run(client, thread_id):
 def check_run_status(client, run_id, thread_id):
     return client.beta.threads.runs.retrieve(run_id=run_id, thread_id=thread_id)
 
-def get_assistant_response(client, thread_id):
-    """
-    global pos_of_last_read_message
-    conversation = client.beta.threads.messages.list(thread_id=thread_id)
-    total_messages = len(conversation.data)
-    if pos_of_last_read_message == total_messages - 1:
-        return "No new messages."
-    new_messages = conversation.data[pos_of_last_read_message + 1:]
-    pos_of_last_read_message = total_messages - 1
-    return new_messages
-    """
+def get_assistant_response(client, thread_id, assistant_id):
     messages = client.beta.threads.messages.list(thread_id=thread_id)
     assistant_responses = [msg for msg in messages.data if msg.assistant_id == assistant_id]
     return assistant_responses

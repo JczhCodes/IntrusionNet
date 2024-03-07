@@ -1,0 +1,16 @@
+/usr/share/exploitdb/exploits/unix/remote/49757.py:11: DeprecationWarning: 'telnetlib' is deprecated and slated for removal in Python 3.13
+  from telnetlib import Telnet
+Traceback (most recent call last):
+  File "/usr/share/exploitdb/exploits/unix/remote/49757.py", line 37, in <module>
+    tn2=Telnet(host, 6200)
+        ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/telnetlib.py", line 221, in __init__
+    self.open(host, port, timeout)
+  File "/usr/lib/python3.11/telnetlib.py", line 238, in open
+    self.sock = socket.create_connection((host, port), timeout)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/socket.py", line 851, in create_connection
+    raise exceptions[0]
+  File "/usr/lib/python3.11/socket.py", line 836, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused

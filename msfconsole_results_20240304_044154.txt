@@ -1,37 +1,0 @@
-Metasploit tip: Tired of setting RHOSTS for modules? Try globally setting it 
-with setg RHOSTS x.x.x.x
-[*] Starting the Metasploit Framework console.../[*] Starting the Metasploit Framework console...-[*] Starting the Metasploit Framework console...\[*] starting the Metasploit Framework console...|[*] STarting the Metasploit Framework console.../[*] StArting the Metasploit Framework console...-[*] StaRting the Metasploit Framework console...\[*] StarTing the Metasploit Framework console...|[*] StartIng the Metasploit Framework console.../[*] StartiNg the Metasploit Framework console...-[*] StartinG the Metasploit Framework console...\[*] Starting the Metasploit Framework console...|[*] Starting The Metasploit Framework console.../[*] Starting tHe Metasploit Framework console...-[*] Starting thE Metasploit Framework console...\[*] Starting the Metasploit Framework console...|[*] Starting the metasploit Framework console.../[*] Starting the MEtasploit Framework console...-[*] Starting the MeTasploit Framework console...\[*] Starting the MetAsploit Framework console...|[*] Starting the MetaSploit Framework console.../                                                  
-               .;lxO0KXXXK0Oxl:.
-           ,o0WMMMMMMMMMMMMMMMMMMKd,
-        'xNMMMMMMMMMMMMMMMMMMMMMMMMMWx,
-      :KMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMK:
-    .KMMMMMMMMMMMMMMMWNNNWMMMMMMMMMMMMMMMX,
-   lWMMMMMMMMMMMXd:..     ..;dKMMMMMMMMMMMMo
-  xMMMMMMMMMMWd.               .oNMMMMMMMMMMk
- oMMMMMMMMMMx.                    dMMMMMMMMMMx
-.WMMMMMMMMM:                       :MMMMMMMMMM,
-xMMMMMMMMMo                         lMMMMMMMMMO
-NMMMMMMMMW                    ,cccccoMMMMMMMMMWlccccc;
-MMMMMMMMMX                     ;KMMMMMMMMMMMMMMMMMMX:
-NMMMMMMMMW.                      ;KMMMMMMMMMMMMMMX:
-xMMMMMMMMMd                        ,0MMMMMMMMMMK;
-.WMMMMMMMMMc                         'OMMMMMM0,
- lMMMMMMMMMMk.                         .kMMO'
-  dMMMMMMMMMMWd'                         ..
-   cWMMMMMMMMMMMNxc'.[37m                ##########
-    .0MMMMMMMMMMMMMMMMWc            #+#    #+#
-      ;0MMMMMMMMMMMMMMMo.          +:+
-        .dNMMMMMMMMMMMMo          +#++:++#+
-           'oOWMMMMMMMMo                +:+
-               .,cdkO0K;        :+:    :+:                                
-                                :::::::+:
-                      Metasploit
-
-       =[ metasploit v6.3.55-dev                          ]
-+ -- --=[ 2397 exploits - 1235 auxiliary - 422 post       ]
-+ -- --=[ 1391 payloads - 46 encoders - 11 nops           ]
-+ -- --=[ 9 evasion                                       ]
-
-Metasploit Documentation: https://docs.metasploit.com/
-
-msf6 > 
