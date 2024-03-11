@@ -15,6 +15,4 @@ create_message "$initial_question"
 
 send_message
 
-sleep 60
-
 retrieve_thread
