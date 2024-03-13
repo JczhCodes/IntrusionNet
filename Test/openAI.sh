@@ -4,10 +4,10 @@ source .env
 
 check_key() {
     if [ -z "$OPENAI_API_KEY" ]; then
-        echo "OPENAI_API_KEY is empty"
+        # echo "OPENAI_API_KEY is empty"
         return 1
     else
-        echo "OPENAI_API_KEY is set to $OPENAI_API_KEY"
+        # echo "OPENAI_API_KEY is set to $OPENAI_API_KEY"
         export OPENAI_API_KEY
     fi
 }
@@ -16,8 +16,6 @@ create_assistant() {
     check_key || return 1
 
     if [ -z "$ASSISTANT_ID" ]; then
-        echo "Assistant_ID does not exist. Creating Assistant now"
-
         local instruction="Context: You serve as the Senior Cyber Security Consultant leading a \
 penetration test. Your expert team covers reconnaissance, scanning, vulnerability \
 assessment, exploitation, and reporting, starting with a provided IP address on a \
@@ -69,15 +67,14 @@ EOF
         ASSISTANT_ID=$(echo "$response" | jq -r '.id')
 
         if [[ "$ASSISTANT_ID" != null && "$ASSISTANT_ID" != "" ]]; then
-            echo "" >>".env"
             echo "ASSISTANT_ID=$ASSISTANT_ID" >>".env"
             export ASSISTANT_ID
         else
-            echo "Failed to create assistant or extract ID."
+            # echo "Failed to create assistant or extract ID."
             return 1
         fi
     else
-        echo "Assistant ID already exists: $ASSISTANT_ID"
+        # echo "Assistant ID already exists: $ASSISTANT_ID"
         export ASSISTANT_ID
     fi
 }
@@ -129,6 +126,7 @@ send_message() {
   }")
 
     run_id=$(echo "$response" | jq -r '.id')
+    echo "$run_id"
 }
 
 retrive_run_status() {
@@ -143,30 +141,41 @@ retrive_run_status() {
 
         # Check if the status is 'failed' to exit the loop in case of failure
         if [ "$status" == "failed" ]; then
-            echo "Run failed. Exiting loop."
+            # echo "Run failed. Exiting loop."
             break
         fi
-
         # Delay before next status check to avoid excessive API calls
         sleep 5
     done
 
     if [ "$status" == "completed" ]; then
-        echo "Run completed successfully."
+        # echo "Run completed successfully."
     fi
 }
 
 execute_command(){ 
     # Check if the command is not empty
-    if [[ -z "$command_output" ]]; then
+    if [[ -z "$latest_message" ]]; then
         echo "No command to execute."
         return 1
     fi
 
-     # Remove occurrences of ''' from the command
-    local sanitized_command="${command_output//\'\'\'}"
+   # Initialize an empty variable to hold the command output
+    local command_output=""
 
-    # Execute the sanitized command
-    #echo "Executing command: $sanitized_command"
-    eval "$sanitized_command"
+    # Use a temporary file to capture the command output
+    local temp_file=$(mktemp)
+
+    # Execute the command and redirect output to the temporary file
+    eval "$latest_message" &> "$temp_file"
+
+    # Read the temporary file line by line
+    while IFS= read -r line; do
+        command_output+="${line}\n"
+    done < "$temp_file"
+
+    # Clean up: remove the temporary file
+
+    # Return the captured output
+    echo -ne "$command_output"
 }
