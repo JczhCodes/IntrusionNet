@@ -93,7 +93,7 @@ create_convo() {
 
     thread_id=$(echo "$response" | jq -r '.id')
 
-    export thread_id
+    echo "$thread_id"
 }
 
 retrieve_thread_messages() {
@@ -169,17 +169,3 @@ execute_command(){
     echo "Executing command: $command"
     eval "$command"
 }
-
-
-
-initial_question="The IP of the client's machine is 192.168.91.130. Begin!"
-
-create_convo
-
-create_message "$initial_question"
-
-send_message
-
-retrive_run_status
-
-execute_command
