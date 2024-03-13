@@ -156,16 +156,17 @@ retrive_run_status() {
     fi
 }
 
-execute_command(){
-    local command=$(retrieve_thread_messages)
- 
+execute_command(){ 
     # Check if the command is not empty
-    if [[ -z "$command" ]]; then
+    if [[ -z "$command_output" ]]; then
         echo "No command to execute."
         return 1
     fi
 
-    # Execute the command
-    echo "Executing command: $command"
-    eval "$command"
+     # Remove occurrences of ''' from the command
+    local sanitized_command="${command_output//\'\'\'}"
+
+    # Execute the sanitized command
+    #echo "Executing command: $sanitized_command"
+    eval "$sanitized_command"
 }

@@ -150,7 +150,7 @@ def main(ip_address):
         while True:
             run_status = check_run_status(client, run.id, thread.id)
             if run_status.status == "completed":
-                messages_response = get_assistant_response(client, thread.id)
+                messages_response = get_assistant_response(client, thread.id, assistant_id="asst_fQtvoPQoorPE05G1D1Pe2udI")
                 break  # Exit the inner loop if the run is completed
             time.sleep(10)  # Wait before checking the status again
         

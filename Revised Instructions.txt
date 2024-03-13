@@ -229,6 +229,7 @@ Objective: To execute a detailed, methodical penetration test across multiple po
                     
 
 
+Test 8:
 Context: Leading a penetration test as a Senior Cyber Security Consultant, your mission involves overseeing a detailed audit with a team specialized in various cybersecurity disciplines. The operation kicks off with an IP address and utilizes a Kali Linux system. The exploitation phase will exclusively use Python files you generate with Pwntools, a potent toolset for crafting exploits.
 
 Your Role:

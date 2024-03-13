@@ -1,32 +1,38 @@
 #!/bin/bash
+set -x
 
 source "./openAI.sh"
 
-# Define the initial question or command to send to the assistant
-initial_question="The IP of the client's machine is 192.168.91.130. Begin!"
+# Ensure the API key is valid
+check_key || { echo "API key check failed. Exiting."; exit 1; }
 
-create_assistant
-
-# Start a new conversation thread
-echo "Starting a new conversation..."
+# Create an assistant and start a new conversation thread
+asst_id=$(create_assistant)
 thread_id=$(create_convo)
-echo "Conversation started with thread ID: $thread_id"
 
-# Send the initial message to the thread
-echo "Sending initial message..."
+# Define the initial question or command to send to the assistant
+initial_question="The IP of the client's machine is 192.168.18.129. Begin!"
 create_message "$initial_question"
-
-# Initiate a run with the assistant
-echo "Initiating a run with the assistant..."
 send_message
 
-# Retrieve the status of the run until it's completed or failed
-echo "Checking run status..."
-retrive_run_status
+# Initial retrieval of thread messages to start the loop
+sleep 40 # Giving some time for the assistant to respond
+latest_message=$(retrieve_thread_messages)
 
-# Assuming the run has completed and you wish to retrieve and execute the command
-# Note: This step might require modifications based on how you handle the assistant's response
-echo "Retrieving command from the assistant..."
-execute_command
+# Loop until the assistant indicates completion
+while [ "$latest_message" != "done" ]; do
+    # Execute the command received from the assistant and capture the output
+    command_output=$(execute_command "$latest_message")
+    
+    # Send back the result of the executed command
+    create_message "$command_output"
+    send_message
+    
+    # Wait a bit before retrieving the next message to give the assistant time to respond
+    sleep 5
+    
+    # Retrieve the latest message from the thread
+    latest_message=$(retrieve_thread_messages)
+done
 
-echo "Script execution completed."
+echo "Assistant interaction completed."
