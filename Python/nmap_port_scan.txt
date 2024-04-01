@@ -1,0 +1,1 @@
+# Nmap 7.94SVN scan initiated Mon Apr  1 13:03:40 2024 as: /usr/bin/nmap -sV -oN nmap_port_scan.txt 192.168.18.129

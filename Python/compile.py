@@ -178,7 +178,6 @@ def execute_command(client, thread_id, command):
                 output = remove_ansi_escape_sequences(output)
                 create_message(client, thread_id, output)  # Send current output to OpenAI
                 # Set run
-                time.sleep(60)
                 run = send_message(client, thread_id, assistant_id)
                 while True:
                     run_status_response = check_run_status(client, run.id, thread_id)
@@ -210,7 +209,6 @@ def main(ip_address):
 
     # Start the conversation loop
     while True:
-        time.sleep(60)
         # Start the run
         run = send_message(client, thread.id, assistant_id)
         # Wait for the run to complete
