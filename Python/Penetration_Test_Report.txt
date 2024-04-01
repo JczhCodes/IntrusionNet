@@ -1,0 +1,7 @@
+use exploit/unix/ftp/vsftpd_234_backdoor:\nvsFTPd 2.3.4 backdoor - exploit/unix/ftp/vsftpd_234_backdoor: Success
+use exploit/unix/ssh/debian_openssh_dsa_key:\nOpenSSH 4.7p1 Debian 8ubuntu1 - exploit/unix/ssh/debian_openssh_dsa_key: Failure
+use auxiliary/scanner/telnet/telnet_version:\nLinux telnetd - auxiliary/scanner/telnet/telnet_version: Success
+use exploit/unix/smtp/postfix_smtp_address_escape:\nPostfix smtpd - exploit/unix/smtp/postfix_smtp_address_escape: Failure
+use auxiliary/scanner/dns/dns_version:\nISC BIND 9.4.2 - auxiliary/scanner/dns/dns_version: Failure
+use exploit/multi/http/apache_mod_cgi_bash_env_exec:\nApache httpd 2.2.8 - exploit/multi/http/apache_mod_cgi_bash_env_exec: Failure
+use auxiliary/scanner/misc/java_rmi_server:\nGNU Classpath grmiregistry - auxiliary/scanner/misc/java_rmi_server: Success

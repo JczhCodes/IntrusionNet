@@ -128,7 +128,11 @@ def execute_command(client, thread_id, command):
     Executes the provided command in a interactive shell, handles EOF
     and continues interaction based on specific output
     """
-    process = pexpect.spawn(command, timeout=30, encoding='utf-8', codec_errors='ignore')
+    if command == "Penetration test is complete.":
+        print("Penetration test is complete.")
+        exit()
+
+    process = pexpect.spawn(command, encoding='utf-8', codec_errors='ignore')
 
     msf6_regex = r"msf6.*>\s"
 
@@ -136,12 +140,12 @@ def execute_command(client, thread_id, command):
 
     while True:
         try:
-            index = process.expect([pexpect.EOF, msf6_regex, command_shell], timeout=60)
+            index = process.expect([pexpect.EOF, msf6_regex, command_shell], timeout=650)
             
             if index == 0:
                 # EOF encountered
                 output = process.before
-                create_message(client, thread_id, output)
+                create_message(client, thread_id, f"Command has been executed. {output}")
                 break
 
             elif index == 1:
@@ -174,6 +178,7 @@ def execute_command(client, thread_id, command):
                 output = remove_ansi_escape_sequences(output)
                 create_message(client, thread_id, output)  # Send current output to OpenAI
                 # Set run
+                time.sleep(60)
                 run = send_message(client, thread_id, assistant_id)
                 while True:
                     run_status_response = check_run_status(client, run.id, thread_id)
@@ -205,6 +210,7 @@ def main(ip_address):
 
     # Start the conversation loop
     while True:
+        time.sleep(60)
         # Start the run
         run = send_message(client, thread.id, assistant_id)
         # Wait for the run to complete
@@ -214,7 +220,10 @@ def main(ip_address):
             if run_status_response.status == "completed":  # Assuming the response has a 'status' attribute
                 message_response = get_assistant_response(client, thread.id)
                 if message_response:  # Check if a message was received
-                    execute_command(client, thread.id, message_response)
+                    if message_response == "Penetration Test Completed":
+                        break
+                    else:
+                        execute_command(client, thread.id, message_response)
                     break  # Exit the inner loop if the run is completed
                 else:
                     break
