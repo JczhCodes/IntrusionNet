@@ -66,10 +66,8 @@ Given the innovative nature of IntrusionNet, users might encounter issues due to
 
 
 ## Examples and Use Cases:
-- Vulnerability Scanning: Demonstrate how IntrusionNet can be used to scan a range of IP addresses for known vulnerabilities, potentially automating the creation of a report that highlights critical issues.
+- Vulnerability Scanning: Demonstrate how IntrusionNet can be used to scan a system for known vulnerabilities, potentially automating the creation of a report that highlights critical issues.
 
 - Exploit Execution: Show how the tool can automate the exploitation of identified vulnerabilities using Metasploit modules, including setting up listeners for reverse shells.
-
-- Post-Exploitation Activities: Provide examples of how IntrusionNet can assist in post-exploitation tasks, such as gathering system information, escalating privileges, or deploying further payloads.
 
 - Automated Penetration Testing: Illustrate a scenario where IntrusionNet performs a full penetration test, from reconnaissance to exploitation, on a given target, showcasing the tool's capabilities in automating complex security assessments.
