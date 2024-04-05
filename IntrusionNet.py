@@ -66,6 +66,7 @@ Instructions:
 
 Objective: Execute an exhaustive and methodical penetration test to uncover vulnerabilities across the network, employing a structured manual approach for full coverage. Document all findings and steps in a detailed final report, only concluding the test after verifying that every aspect has been thoroughly addressed.
 """,
+            tools=[{"type": "code_interpreter"}],
             model="gpt-4-turbo-preview"
         )
 
